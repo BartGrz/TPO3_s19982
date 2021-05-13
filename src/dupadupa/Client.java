@@ -32,52 +32,42 @@ public class Client {
     @Getter
     @Setter
     static private String message;
-
-    private static List<String> preferences = new ArrayList<>();
-
+    private static SocketChannel client;
+    @Getter
+    @Setter
+    private static String preferences = null;
+    private static TextField textField = new TextField();
+    private static ByteBuffer buffer = ByteBuffer.allocate(1024);
 
     public static void main(String[] args) {
 
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
-            SocketChannel client = SocketChannel.open(new InetSocketAddress("localhost", 8089));
 
+            client = SocketChannel.open(new InetSocketAddress("localhost", 8089));
+
+            buffer.put("Client".getBytes());
+            buffer.flip();
+            client.write(buffer);
+            buffer.clear();
 
             while (true) {
 
-
-                    if (preferences.isEmpty()) {
-
-                    } else {
-
-                        byte [] tab = converArrayToByte(preferences);
-                        buffer.limit(tab.length);
-                        buffer.put(tab);
-                        buffer.flip();
-                        preferences.removeAll(preferences);
-                        client.write(buffer);
-                        buffer.clear();
-
-                }
-
-               // while (!buffer.hasRemaining()) {
-
-              //  }
                 String mes = null;
-                    buffer.flip();
                 client.read(buffer); //odczyt od serwera
+                buffer.flip();
                 mes = new String(buffer.array()).trim();
-                if (mes.length() != 0) {
-                    // System.out.println("CLIENT received from server " + mes);
-                    setMessage(mes);
+                if (mes.length() > 0) {
                     buffer.clear();
+                    setMessage(mes);
                 }
-
 
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
     }
 
 
@@ -101,20 +91,28 @@ public class Client {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        button.setOnAction(event -> textField.setText(getMessage()));
-        subscribe.setOnAction(event -> preferences.add(comboBox.getValue().toString()));
+        button.setOnAction(event -> {
 
+            textField.setText(getMessage());
+            setMessage(null);
 
+        });
+        subscribe.setOnAction(event -> {
+
+            try {
+                subscribe(comboBox.getValue().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    private static byte[] converArrayToByte(List<String> list) {
+    private static void subscribe(String sub) throws IOException {
 
-        StringBuilder stb = new StringBuilder();
-        for (String s : list) {
-            stb.append(s + " ");
-        }
-
-        return stb.toString().getBytes();
+        buffer.put(sub.getBytes());
+        buffer.flip();
+        client.write(buffer);
+        buffer.clear();
     }
 
 }

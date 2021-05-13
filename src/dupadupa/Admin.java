@@ -1,4 +1,4 @@
-package myTest;
+package dupadupa;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -34,6 +34,11 @@ public class Admin   {
             SocketChannel admin = SocketChannel.open(new InetSocketAddress("localhost", 8089));
             Scanner scanner = new Scanner(System.in);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+            buffer.put("Admin".getBytes());
+            buffer.flip();
+            admin.write(buffer);
+            buffer.clear();
 
             while (true) {
 
@@ -78,7 +83,7 @@ public class Admin   {
         primaryStage.show();
 
         textField.setText(getMessage());
-        button.setOnAction(event -> setMessage(textField.getText()));
+        button.setOnAction(event -> setMessage(comboBox.getValue().toString()));
 
     }
 }

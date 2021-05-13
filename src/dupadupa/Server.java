@@ -20,6 +20,8 @@ public class Server {
     @Getter
     @Setter
     private static String info;
+    public static Info askMe = new Info();
+    private static Set<SelectionKey> selectedKeys = null;
 
     public static void main(String[] args) {
 
@@ -34,7 +36,7 @@ public class Server {
 
             while (true) {
                 selector.select();
-                Set<SelectionKey> selectedKeys = selector.selectedKeys();
+                selectedKeys = selector.selectedKeys();
                 for (Iterator<SelectionKey> it = selectedKeys.iterator(); it.hasNext(); ) {
                     SelectionKey key = it.next();
                     if (key.isAcceptable()) {
@@ -56,8 +58,6 @@ public class Server {
 
 
         SocketChannel client = serverSocketChannel.accept();
-        // client.getRemoteAddress();
-
         System.out.println("connection accepted from " + client.getRemoteAddress());
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ, client.socket().getPort());
@@ -74,55 +74,60 @@ public class Server {
         client.read(buffer);
         buffer.flip();
         buffer.clear();
+
 //        Parse data from buffer to String
         String data = new String(buffer.array()).trim();
         if (data.length() > 0) {
-            //  System.out.println("Received message  from " + client.socket().getPort() +  " with value : " + data);
-            if(data.equals("celebryci")){
+
+            if (data.equals("Client") || data.equals("Admin")) {
+                askMe.gatherConnectionInfo(key, data);
+            } else if (!askMe.getKeyValueClients(key).equals("Admin")) {
+                askMe.addToMap(key, data);
+            }
+            if (askMe.getKeyValueClients(key).equals("Admin") && !data.equals("Admin")) {
                 setInfo(data);
-                client.register(selector, SelectionKey.OP_WRITE);
+                // System.out.println("sended" + getInfo());
             }
-
-
-            if (data.equalsIgnoreCase("exit")) {
-                // client.close();
-                System.out.println("Connection closed...");
-            }
-
-
-
         }
+        client.register(selector, SelectionKey.OP_WRITE);
+
 
     }
+
 
     private static void handleWriting(SelectionKey key) throws IOException {
 
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
-        String mes_cl = getInfo() ;
 
-        //FIXME : bufor zbiera ostatnie elementy z buforu i dodaje do mes
+        // buffer.clear();
+        String mes_cl = getInfo();
 
-        buffer.put(mes_cl.getBytes());
+        //fixme: problem z wysylaniem wiadomosci do odpowiednich klientow, teraz dodatkowo nie zadziala
+        // , jezeli klient zasubskrybuje kanal przed wyslaniem wiadomosci przez admina
 
-        for (SelectionKey keys : selector.keys()) {
+        SocketChannel chan = (SocketChannel) key.channel();
+        for (SelectionKey keys : selectedKeys) {
+            if (askMe.getKeyValueSubs(keys).equals(mes_cl)) {
 
-            if (key.isValid() && keys.channel() instanceof SocketChannel) {
-                SocketChannel chan = (SocketChannel) keys.channel();
-                buffer.flip();
-                chan.write(buffer);
-
-
-                //   System.out.println("mesage send to " + chan.socket().getPort());
-                chan.register(selector, SelectionKey.OP_READ);
-
+                System.out.println(" keys = " + keys + " key = " + keys);
+                if (keys.channel() instanceof SocketChannel) {
+                    SocketChannel channel = (SocketChannel) keys.channel();
+                    buffer.put(mes_cl.getBytes());
+                    buffer.flip();
+                    channel.write(buffer);
+                    buffer.clear();
+                }else {
+                    SocketChannel channel = (SocketChannel) keys.channel();
+                    buffer.put("".getBytes());
+                    buffer.flip();
+                    channel.write(buffer);
+                    buffer.clear();
+                }
             }
-
-
+            buffer.clear();
+            chan.register(selector, SelectionKey.OP_READ);
         }
-
-        buffer.clear();
-
     }
 
 }
