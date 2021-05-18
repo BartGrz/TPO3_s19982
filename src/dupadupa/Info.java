@@ -1,56 +1,50 @@
 package dupadupa;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.nio.channels.SelectionKey;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor
 public class Info {
     @Getter
     private Map<SelectionKey, String> subscriptions = new HashMap<>();
     @Getter
-    private Map<SelectionKey, String> clients = new HashMap<>();
+    private Map<Integer, String> clients = new HashMap<>();
+    @Getter
+    @Setter
+    private Client client;
+    private String category;
+    @Getter
+    @Setter
+    private String adminMessage;
+    private int port;
+    @Getter
+    private Map<Integer, Set<String>> set = new HashMap();
+    Set<String> categories = new HashSet<>();
 
-    public void addToMap(SelectionKey key, String subsc ) {
-        subscriptions.put(key, subsc);
-        System.out.println("Added to subsc " + subsc);
+    @Getter
+    private List<SelectionKey> keysInMemory = new ArrayList<>();
 
-    }
+    public void linkPortWithKey(int port, String category) {
 
-    public void gatherConnectionInfo(SelectionKey key, String client ){
-        clients.put(key,client);
-        System.out.println("Added to clients " + clients);
-    }
+        System.out.println(set + " port = " + port);
+        if (category == null) {
+            set.put(port, new HashSet<String>());
+        } else  {
+            set.get(port).add(category);
 
-    public String getKeyValueClients(SelectionKey key) {
-
-        if (validateServerClientsList(key)) {
-            return clients.get(key);
-        }else {
-           return "";
-        }
-    }
-    public String getKeyValueSubs(SelectionKey key) {
-
-        if (validateServerSubscribentsList(key)) {
-            return subscriptions.get(key);
-        }else {
-            return "";
         }
     }
 
-    private boolean validateServerClientsList(SelectionKey key) {
+    public Set<String> addToPort(int port, String category) {
 
-       return clients.keySet().stream().anyMatch(k->k.equals(key));
+        set.get(port).add(category);
 
-    }
-    private boolean validateServerSubscribentsList(SelectionKey key) {
-
-        return subscriptions.keySet().stream().anyMatch(k->k.equals(key));
-
+        return set.get(port);
     }
 
 }

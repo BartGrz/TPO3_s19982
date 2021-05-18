@@ -25,38 +25,18 @@ public class Admin   {
     @Getter
     @Setter
     private static String message;
-
+    private static SocketChannel admin;
 
 
     public static void main(String[] args) {
 
         try {
-            SocketChannel admin = SocketChannel.open(new InetSocketAddress("localhost", 8089));
-            Scanner scanner = new Scanner(System.in);
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
-
-            buffer.put("Admin".getBytes());
-            buffer.flip();
-            admin.write(buffer);
-            buffer.clear();
+             admin = SocketChannel.open(new InetSocketAddress("localhost", 8089));
 
             while (true) {
 
-                    while (getMessage() == null) {
-                        Thread.sleep(150);
-                    }
-
-                    buffer.put(getMessage().getBytes());
-                    buffer.flip();
-                    admin.write(buffer); //wysylanie do serwera
-                    buffer.clear();
-                    System.out.println("ADMIN sending message " + message);
-                    setMessage(null);
-
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -83,7 +63,21 @@ public class Admin   {
         primaryStage.show();
 
         textField.setText(getMessage());
-        button.setOnAction(event -> setMessage(comboBox.getValue().toString()));
+        button.setOnAction(event -> {
+            try {
+                writeMesage("admin " + comboBox.getValue().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
+    }
+    private static void writeMesage(String message) throws IOException {
+
+       ByteBuffer buffer= ByteBuffer.wrap(message.getBytes());
+        buffer.rewind();
+        admin.write(buffer); //wysylanie do serwera
+        buffer.clear();
+       // setMessage(null);
     }
 }

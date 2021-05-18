@@ -24,7 +24,6 @@ public class Main extends Application {
         }
     }
 
-
     public static void main(String[] args) {
 
         Thread server = new Thread(() -> Server.main(tab));
@@ -48,20 +47,23 @@ public class Main extends Application {
         pane.getChildren().addAll(button_admin, button_client);
         button_admin.setOnAction(event -> {
             try {
-
-                Admin.start(new Stage());
                 Thread admin = new Thread(() -> Admin.main(tab));
+                Admin.start(new Stage());
                 admin.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
         button_client.setOnAction(event -> {
+            Client client = new Client();
+            Client2 client2 = new Client2();
             try {
-
-                Client.start(new Stage());
-                Thread client = new Thread(() -> Client.main(tab));
-                client.start();
+                Thread clientStrart = new Thread(() -> client.main(tab));
+                Thread client2Start = new Thread(() -> client2.main(tab));
+                client.start(new Stage());
+                client2.start(new Stage());
+                client2Start.start();
+                clientStrart.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }

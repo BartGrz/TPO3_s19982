@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 
 
-public class Client {
+public class Client2 {
     @Getter
     @Setter
     static private String message;
@@ -119,10 +119,10 @@ public class Client {
             buffer = ByteBuffer.wrap(preferencesList.get(i).getBytes());
         }
         buffer.rewind();
-        client.write(buffer);
+        this.client.write(buffer);
         buffer.clear();
 
-       // return;
+        // return;
 
 
     }
