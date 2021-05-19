@@ -17,14 +17,15 @@ public class Info {
     @Getter
     @Setter
     private Client client;
-    private String category;
+    @Getter
+    @Setter
+    private String adminChosenCategory;
     @Getter
     @Setter
     private String adminMessage;
-    private int port;
     @Getter
     private Map<Integer, Set<String>> set = new HashMap();
-    Set<String> categories = new HashSet<>();
+
 
     @Getter
     private List<SelectionKey> keysInMemory = new ArrayList<>();
@@ -38,13 +39,6 @@ public class Info {
             set.get(port).add(category);
 
         }
-    }
-
-    public Set<String> addToPort(int port, String category) {
-
-        set.get(port).add(category);
-
-        return set.get(port);
     }
 
 }

@@ -49,7 +49,7 @@ public class Admin   {
         Button button = new Button("SEND");
         button.setLayoutY(40);
         ComboBox comboBox = new ComboBox();
-        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino");
+        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino","Randki","sport");
         comboBox.getItems().addAll(pref);
         button.setLayoutY(40);
         comboBox.setLayoutY(80);
@@ -65,7 +65,7 @@ public class Admin   {
         textField.setText(getMessage());
         button.setOnAction(event -> {
             try {
-                writeMesage("admin " + comboBox.getValue().toString());
+                writeMesage("admin;" + comboBox.getValue().toString() + ";" + textField.getText());
             } catch (IOException e) {
                 e.printStackTrace();
             }

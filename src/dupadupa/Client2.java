@@ -80,7 +80,7 @@ public class Client2 {
         Pane pane = new Pane();
         TextField textField = new TextField();
         ComboBox comboBox = new ComboBox();
-        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino");
+        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino","Randki","sport");
         comboBox.getItems().addAll(pref);
         Button button = new Button("REFRESH");
         Button subscribe = new Button("SUBSCRIBE");
@@ -101,7 +101,7 @@ public class Client2 {
             try {
 
                 String[] tab = this.getClient().getLocalAddress().toString().split(":");
-                subscribe(comboBox.getValue().toString() + " " + tab[1]);
+                subscribe(comboBox.getValue().toString() + ";" + tab[1]);
                 comboBox.setValue(null);
 
             } catch (IOException e) {

@@ -16,5 +16,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="apache-log4j-2.14.1-bin1" level="project" />
   </component>
 </module>

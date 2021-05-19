@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 
 
-public class Client {
+public class Client3 {
     @Getter
     @Setter
     static private String message;

@@ -57,13 +57,17 @@ public class Main extends Application {
         button_client.setOnAction(event -> {
             Client client = new Client();
             Client2 client2 = new Client2();
+            Client3 client3 = new Client3();
             try {
                 Thread clientStrart = new Thread(() -> client.main(tab));
                 Thread client2Start = new Thread(() -> client2.main(tab));
+                Thread client3tart = new Thread(() -> client3.main(tab));
                 client.start(new Stage());
                 client2.start(new Stage());
+                client3.start(new Stage());
                 client2Start.start();
                 clientStrart.start();
+                client3tart.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
