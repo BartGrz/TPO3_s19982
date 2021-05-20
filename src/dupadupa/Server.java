@@ -49,7 +49,7 @@ public class Server {
         System.out.println(serverInfo + " connection accepted from " + client.socket().getPort());
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
-      //  selector.wakeup();
+        //  selector.wakeup();
 
     }
 
@@ -72,7 +72,7 @@ public class Server {
             if (!info.getSet().keySet().stream().anyMatch(integer -> integer == socketChannel.socket().getPort())) {
                 info.linkPortWithKey(socketChannel.socket().getPort(), null);
             }
-            info.linkPortWithKey((int) socketChannel.socket().getPort(), mes[0]);
+            info.linkPortWithKey(socketChannel.socket().getPort(), mes[0]);
             socketChannel.register(selector, SelectionKey.OP_READ);
 
         }
@@ -83,18 +83,22 @@ public class Server {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
         if (info.getAdminMessage() != null) {
-            ByteBuffer buffer = ByteBuffer.allocate(256);
+            ByteBuffer buffer = ByteBuffer.allocate(512);
             for (SelectionKey selectionKey : selector.keys()) {
                 if (selectionKey.channel() instanceof SocketChannel) {
                     SocketChannel channel = (SocketChannel) selectionKey.channel();
 
-                    if (info.getSet().get(channel.socket().getPort()) != null && info.getSet().get(channel.socket().getPort()).stream().anyMatch(s -> s.equals(info.getAdminChosenCategory()))) {
-                        buffer.put(info.getAdminMessage().getBytes());
+                    if (info.getSet().get(channel.socket().getPort()) != null
+                            && info.getSet().get(channel.socket().getPort())
+                            .stream()
+                            .anyMatch(s -> s.equals(info.getAdminChosenCategory()))
+                    ) {
+                        String messageReturn = info.getAdminChosenCategory() + ";" + info.getAdminMessage();
+                        buffer.put(messageReturn.getBytes());
                         buffer.rewind();
                         channel.write(buffer);
 
                     }
-
                     channel.register(selector, SelectionKey.OP_READ);
                 }
                 buffer.clear();
@@ -103,5 +107,4 @@ public class Server {
             socketChannel.register(selector, SelectionKey.OP_READ);
         }
     }
-
 }

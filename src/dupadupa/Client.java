@@ -1,35 +1,21 @@
 package dupadupa;
 
-import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-import netscape.javascript.JSObject;
 
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.stream.Collector;
-
 
 public class Client {
     @Getter
@@ -41,23 +27,14 @@ public class Client {
     @Setter
     private String preferences = null;
 
-    public static List<String> preferencesList = new ArrayList<>();
-    Info info = new Info();
-
     public static void main(String[] args) {
-        StringBuilder stb = new StringBuilder();
+
         try {
             client = SocketChannel.open(new InetSocketAddress("localhost", 8089));
-/*
-            ByteBuffer buf = ByteBuffer.wrap("ping".getBytes());
-            buf.rewind();
-            client.write(buf);
-            buf.clear();
 
-*/
             while (true) {
 
-                ByteBuffer buffer = ByteBuffer.allocate(256);
+                ByteBuffer buffer = ByteBuffer.allocate(512);
                 String mes = null;
                 client.read(buffer); //odczyt od serwera
                 buffer.rewind();
@@ -71,14 +48,12 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
 
     public void start(Stage primaryStage) throws Exception {
         Pane pane = new Pane();
-        TextField textField = new TextField();
+
         ComboBox comboBox = new ComboBox();
         ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino", "Randki", "sport");
         comboBox.getItems().addAll(pref);
@@ -87,7 +62,7 @@ public class Client {
         button.setLayoutY(40);
         comboBox.setLayoutY(80);
         subscribe.setLayoutY(120);
-        pane.getChildren().addAll(textField, button, comboBox, subscribe);
+        pane.getChildren().addAll(button, comboBox, subscribe);
         pane.setMaxSize(200, 200);
         pane.setMaxHeight(200);
         pane.setMaxWidth(200);
@@ -96,7 +71,15 @@ public class Client {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        button.setOnAction(event -> textField.setText(getMessage()));
+        button.setOnAction(event -> {
+            if (getMessage() != null) {
+                try {
+                    popup();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         subscribe.setOnAction(event -> {
             try {
 
@@ -112,19 +95,29 @@ public class Client {
 
     private void subscribe(String sub) throws IOException {
 
-
-        this.preferencesList.add(sub);
         ByteBuffer buffer = null;
-        for (int i = 0; i < preferencesList.size(); i++) {
-            buffer = ByteBuffer.wrap(preferencesList.get(i).getBytes());
-        }
+        buffer = ByteBuffer.wrap(sub.getBytes());
         buffer.rewind();
-        client.write(buffer);
+        this.client.write(buffer);
         buffer.clear();
 
-        // return;
 
+    }
 
+    private void popup() throws IOException {
+
+        System.out.println(getMessage());
+        String mes[] = getMessage().split(";");
+        Stage stage = new Stage();
+        Pane pane = new Pane();
+        Label label = new Label("Message : " + mes[1]);
+        Label info = new Label("You getting this message because you subsbscribe to topic "
+                + mes[0]);
+        label.setLayoutY(40);
+        pane.getChildren().addAll(label, info);
+        stage.setScene(new Scene(pane, 300, 100));
+        stage.setTitle("Message from Admin");
+        stage.show();
     }
 
 }

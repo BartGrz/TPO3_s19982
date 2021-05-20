@@ -14,15 +14,8 @@ public class Main extends Application {
     static int port;
 
 
-    private static String[] tab;
+    private static String[] tab = new String[]{""};
 
-    static {
-        try {
-            tab = new String[]{String.valueOf(AvailablePort.getAvailablePort())};
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void main(String[] args) {
 
@@ -46,37 +39,46 @@ public class Main extends Application {
         button_client.setLayoutY(40);
         pane.getChildren().addAll(button_admin, button_client);
         button_admin.setOnAction(event -> {
+
             try {
+
                 Thread admin = new Thread(() -> Admin.main(tab));
                 Admin.start(new Stage());
                 admin.start();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
         button_client.setOnAction(event -> {
+
             Client client = new Client();
             Client2 client2 = new Client2();
             Client3 client3 = new Client3();
+
             try {
                 Thread clientStrart = new Thread(() -> client.main(tab));
                 Thread client2Start = new Thread(() -> client2.main(tab));
                 Thread client3tart = new Thread(() -> client3.main(tab));
+
                 client.start(new Stage());
                 client2.start(new Stage());
                 client3.start(new Stage());
+
                 client2Start.start();
                 clientStrart.start();
                 client3tart.start();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
+
         primaryStage.setScene(new Scene(pane, 100, 200));
         primaryStage.setResizable(false);
         primaryStage.show();
-        if (!primaryStage.isShowing()) {
 
+        if (!primaryStage.isShowing()) {
             Platform.exit();
         }
     }

@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Scanner;
-
 
 public class Admin   {
     @Getter
@@ -78,6 +76,5 @@ public class Admin   {
         buffer.rewind();
         admin.write(buffer); //wysylanie do serwera
         buffer.clear();
-       // setMessage(null);
     }
 }
