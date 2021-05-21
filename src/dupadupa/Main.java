@@ -6,9 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import zad1.AvailablePort;
-
-import java.io.IOException;
 
 public class Main extends Application {
     static int port;

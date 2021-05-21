@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class Client {
     @Getter
@@ -26,6 +28,9 @@ public class Client {
     @Getter
     @Setter
     private String preferences = null;
+    private static Map<String, String> messages = new HashMap<>();
+    private LocalDateTime time = LocalDateTime.now();
+    private static List<String> categoriesWWithMessages = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -42,6 +47,9 @@ public class Client {
                 mes = new String(buffer.array()).trim();
                 if (mes.length() > 0) {
                     setMessage(mes);
+                    String[] received = filter();
+                    messages.put(received[0], received[1]);
+                    categoriesWWithMessages.add(received[0]);
                 }
             }
 
@@ -49,7 +57,6 @@ public class Client {
             e.printStackTrace();
         }
     }
-
 
     public void start(Stage primaryStage) throws Exception {
         Pane pane = new Pane();
@@ -100,24 +107,52 @@ public class Client {
         buffer.rewind();
         this.client.write(buffer);
         buffer.clear();
-
-
     }
 
     private void popup() throws IOException {
+        List<Label> labels = new ArrayList<>();
 
-        System.out.println(getMessage());
         String mes[] = getMessage().split(";");
         Stage stage = new Stage();
         Pane pane = new Pane();
-        Label label = new Label("Message : " + mes[1]);
-        Label info = new Label("You getting this message because you subsbscribe to topic "
-                + mes[0]);
-        label.setLayoutY(40);
-        pane.getChildren().addAll(label, info);
-        stage.setScene(new Scene(pane, 300, 100));
+
+        Label label = new Label(time.getHour() + ":" + time.getMinute() + " Message : ");
+        Label info = new Label("You getting this message because you subsbscribe to topic ");
+        info.setLayoutY(0);
+        label.setLayoutY(20);
+
+        int i = 0;
+        for (Iterator<String> it = messages.keySet().iterator(); it.hasNext(); ) {
+
+            String key = it.next();
+            if (key.equals(categoriesWWithMessages.get(i))) {
+
+                Label messageInfo = new Label(info.getText() + " " + key);
+                Label message = new Label(label.getText() + " " + messages.get(key));
+
+                messageInfo.setLayoutY(info.getLayoutY() + 20);
+                message.setLayoutY(label.getLayoutY() + 20);
+
+                labels.add(messageInfo);
+                labels.add(message);
+
+                info.setLayoutY(40);
+                label.setLayoutY(60);
+            }
+            i += 1;
+        }
+        for (Label l : labels) {
+            pane.getChildren().add(l);
+        }
+        stage.setScene(new Scene(pane, 400, 200));
         stage.setTitle("Message from Admin");
         stage.show();
+    }
+
+    private static String[] filter() {
+
+
+        return getMessage().split(";");
     }
 
 }

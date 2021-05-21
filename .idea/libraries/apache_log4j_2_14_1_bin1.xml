@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="apache-log4j-2.14.1-bin1">
+    <ANNOTATIONS>
+      <root url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" />
+    </JAVADOC>
+    <NATIVE>
+      <root url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" />
+    </NATIVE>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" />
+    </SOURCES>
+    <jarDirectory url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" recursive="false" />
+    <jarDirectory url="jar://$PROJECT_DIR$/apache-log4j-2.14.1-bin.zip!/" recursive="false" type="SOURCES" />
+  </library>
+</component>
