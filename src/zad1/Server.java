@@ -1,5 +1,7 @@
 package zad1;
 
+import lombok.Getter;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -11,6 +13,8 @@ public class Server {
     private static Selector selector = null;
     private static Info info = new Info();
     private static final String serverInfo = "SERVER : ";
+    @Getter
+    private static List<Info> listInfo = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -20,6 +24,7 @@ public class Server {
             socket.bind(new InetSocketAddress("localhost", 8089));
             socket.configureBlocking(false);
             socket.register(selector, socket.validOps(), null);
+            listInfo.add(info);
             while (true) {
 
                 selector.selectNow();
@@ -74,10 +79,11 @@ public class Server {
             }
             if(mes[1].equals("delete")) {
                 info.deleteCategoryForPort(socketChannel.socket().getPort(),mes[0]);
+                System.out.println(info.getSet().get(socketChannel.socket().getPort()));
+            }else {
+                info.linkPortWithCategory(socketChannel.socket().getPort(), mes[0]);
+                socketChannel.register(selector, SelectionKey.OP_READ);
             }
-            info.linkPortWithCategory(socketChannel.socket().getPort(), mes[0]);
-            socketChannel.register(selector, SelectionKey.OP_READ);
-
         }
     }
 
