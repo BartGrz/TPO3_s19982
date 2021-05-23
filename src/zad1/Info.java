@@ -1,4 +1,4 @@
-package dupadupa;
+package zad1;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,12 +15,18 @@ public class Info {
     @Getter
     private Map<Integer, Set<String>> set = new HashMap();
 
-    public void linkPortWithKey(int port, String category) {
+    public void linkPortWithCategory(int port, String category) {
 
         if (category == null) {
-            set.put(port, new HashSet<String>());
+            set.put(port, new HashSet<>());
         } else {
             set.get(port).add(category);
         }
+    }
+    public void deleteCategoryForPort(int port, String category) {
+
+        set.get(port).remove(category);
+        System.out.println("deleted " + category + " from port " + port);
+
     }
 }

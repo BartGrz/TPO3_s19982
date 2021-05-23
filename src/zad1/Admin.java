@@ -1,6 +1,5 @@
-package dupadupa;
+package zad1;
 
-import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -8,10 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
-import javafx.scene.web.WebHistory;
 import javafx.stage.Stage;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.io.IOException;
@@ -47,7 +44,7 @@ public class Admin   {
         Button button = new Button("SEND");
         button.setLayoutY(40);
         ComboBox comboBox = new ComboBox();
-        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino","Randki","sport");
+        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino","randki","sport");
         comboBox.getItems().addAll(pref);
         button.setLayoutY(40);
         comboBox.setLayoutY(80);

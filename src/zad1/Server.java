@@ -1,4 +1,4 @@
-package dupadupa;
+package zad1;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -70,9 +70,12 @@ public class Server {
             admin.register(selector, SelectionKey.OP_WRITE);
         } else {
             if (!info.getSet().keySet().stream().anyMatch(integer -> integer == socketChannel.socket().getPort())) {
-                info.linkPortWithKey(socketChannel.socket().getPort(), null);
+                info.linkPortWithCategory(socketChannel.socket().getPort(), null);
             }
-            info.linkPortWithKey(socketChannel.socket().getPort(), mes[0]);
+            if(mes[1].equals("delete")) {
+                info.deleteCategoryForPort(socketChannel.socket().getPort(),mes[0]);
+            }
+            info.linkPortWithCategory(socketChannel.socket().getPort(), mes[0]);
             socketChannel.register(selector, SelectionKey.OP_READ);
 
         }
@@ -83,7 +86,7 @@ public class Server {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
         if (info.getAdminMessage() != null) {
-            ByteBuffer buffer = ByteBuffer.allocate(512);
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
             for (SelectionKey selectionKey : selector.keys()) {
                 if (selectionKey.channel() instanceof SocketChannel) {
                     SocketChannel channel = (SocketChannel) selectionKey.channel();
@@ -97,6 +100,7 @@ public class Server {
                         buffer.put(messageReturn.getBytes());
                         buffer.rewind();
                         channel.write(buffer);
+                        System.out.println(messageReturn);
 
                     }
                     channel.register(selector, SelectionKey.OP_READ);
