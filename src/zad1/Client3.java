@@ -16,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,13 +26,9 @@ public class Client3 {
     static private String message;
     @Getter
     public static SocketChannel client;
-    @Getter
-    @Setter
-    private String preferences = null;
     private static Map<String, String> messages = new HashMap<>();
-    private LocalDateTime time = LocalDateTime.now();
-    private static List<String> categoriesWWithMessages = new ArrayList<>();
     private List<String> subscibedTopics = new ArrayList<>();
+
 
     public static void main(String[] args) {
 
@@ -40,7 +37,7 @@ public class Client3 {
 
             while (true) {
 
-                ByteBuffer buffer = ByteBuffer.allocate(512);
+                ByteBuffer buffer = ByteBuffer.allocate(1024);
                 String mes = null;
                 client.read(buffer); //odczyt od serwera
                 buffer.rewind();
@@ -50,8 +47,6 @@ public class Client3 {
                     setMessage(mes);
                     String[] received = filter();
                     messages.put(received[0], received[1]);
-                    categoriesWWithMessages.add(received[0]);
-
                 }
             }
 
@@ -69,12 +64,16 @@ public class Client3 {
         comboBox.getItems().addAll(pref);
         Button button = new Button("REFRESH");
         Button subscribe = new Button("SUBSCRIBE");
+        Button unsubscribe = new Button("UNSUBSCRIBE");
         Button subscibedTopics = new Button("TOPICS");
         button.setLayoutY(40);
         comboBox.setLayoutY(80);
         subscribe.setLayoutY(120);
         subscibedTopics.setLayoutY(160);
-        pane.getChildren().addAll(button, comboBox, subscribe,subscibedTopics);
+        unsubscribe.setLayoutY(120);
+        unsubscribe.setLayoutX(80);
+        unsubscribe.setVisible(false);
+        pane.getChildren().addAll(button, comboBox, subscribe, subscibedTopics, unsubscribe);
         pane.setMaxSize(200, 200);
         pane.setMaxHeight(200);
         pane.setMaxWidth(200);
@@ -84,47 +83,93 @@ public class Client3 {
         primaryStage.show();
 
         button.setOnAction(event -> {
-            if (getMessage() != null) {
-                try {
-                    popupWIthMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        subscribe.setOnAction(event -> {
+
             try {
-
-                String[] tab = this.getClient().getLocalAddress().toString().split(":");
-                subscribe(comboBox.getValue().toString() + ";" + tab[1]);
-                comboBox.setValue(null);
-
+                popupWIthMessage();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
-        subscibedTopics.setOnAction(event -> subscribedElements());
+        subscribe.setOnAction(event -> {
+
+            try {
+                String[] tab = client.getLocalAddress().toString().split(":");
+                if (comboBox.getValue() == null) {
+                    Pane paneError = new Pane();
+                    Label label = new Label("you need to choose topic from list");
+                    paneError.getChildren().add(label);
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(paneError, 200, 100));
+                    stage.show();
+
+                } else {
+                    subscribe(comboBox.getValue().toString() + ";" + tab[1]);
+                    comboBox.setValue(null);
+                    unsubscribe.setVisible(true);
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        subscibedTopics.setOnAction(event -> {
+            try {
+                subscribedElements();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        unsubscribe.setOnAction(event -> {
+            try {
+
+
+                if (comboBox.getValue() == null) {
+                    Pane paneError = new Pane();
+                    Label label = new Label("you need to choose topic from list");
+                    paneError.getChildren().add(label);
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(paneError, 200, 100));
+                    stage.show();
+                } else {
+                    deleteTopicFromList(comboBox.getValue().toString());
+                }
+                Thread.sleep(20);
+                unsubscribe.setVisible(!validate());
+                comboBox.setValue(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        });
     }
 
     private void subscribe(String sub) throws IOException {
-        String splitted [] = sub.split(";");
+        if (sub == null) {
+
+        }
+        String splitted[] = sub.split(";");
 
         subscibedTopics.add(splitted[0]);
         ByteBuffer buffer = null;
         buffer = ByteBuffer.wrap(sub.getBytes());
         buffer.rewind();
-        this.client.write(buffer);
+        client.write(buffer);
         buffer.clear();
     }
 
-    private void popupWIthMessage() throws IOException {
 
+    private void popupWIthMessage() throws IOException {
+        LocalDateTime time = LocalDateTime.now();
+        time.format(DateTimeFormatter.BASIC_ISO_DATE);
+        int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
         List<Label> labels = new ArrayList<>();
-        String mes[] = getMessage().split(";");
+
         Stage stage = new Stage();
         Pane pane = new Pane();
 
-        Label label = new Label(time.getHour() + ":" + time.getMinute() + " Message : ");
+        Label label = new Label(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond() + " Message : ");
         Label info = new Label("You getting this message because you subsbscribe to topic ");
         info.setLayoutY(0);
         label.setLayoutY(20);
@@ -133,7 +178,8 @@ public class Client3 {
         for (Iterator<String> it = messages.keySet().iterator(); it.hasNext(); ) {
 
             String key = it.next();
-            if (key.equals(categoriesWWithMessages.get(i))) {
+            if (Server.getListInfo().get(0).getSet().get(port).stream().anyMatch(s -> s.equals(key))) {
+
 
                 Label messageInfo = new Label(info.getText() + " " + key);
                 Label message = new Label(label.getText() + " " + messages.get(key));
@@ -144,10 +190,14 @@ public class Client3 {
                 labels.add(messageInfo);
                 labels.add(message);
 
-                info.setLayoutY(40);
-                label.setLayoutY(60);
+                info.setLayoutY(messageInfo.getLayoutY() + 20);
+                label.setLayoutY(message.getLayoutY() + 20);
+                i += 1;
             }
-            i += 1;
+        }
+        if (labels.isEmpty()) {
+            label.setText("there are no messages available at the moment for topics you subsribed to");
+            labels.add(label);
         }
         for (Label l : labels) {
             pane.getChildren().add(l);
@@ -156,20 +206,48 @@ public class Client3 {
         stage.setScene(new Scene(pane, 400, 200));
         stage.setTitle("Message from Admin");
         stage.show();
-    }
-    private void subscribedElements(){
 
+    }
+
+
+    private void subscribedElements() throws IOException {
+        int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
         Stage stage = new Stage();
         Pane pane = new Pane();
         Label info = new Label();
         pane.getChildren().add(info);
-        info.setText("subsribed topics : " + subscibedTopics.stream().
-                collect(Collectors.joining(" "))
-        ); //[
+        if (Server.getListInfo().get(0).getSet().values().stream().findAny().isPresent()) {
+            info.setText("subsribed topics : " + Server.getListInfo()
+                    .get(0)
+                    .getSet()
+                    .get(port)
+                    .stream()
+                    .collect(Collectors.joining(" ")));
 
-        stage.setScene(new Scene(pane,100,100));
+        } else {
+            info.setText("you did not subsribed to any topics available");
+        }
+        stage.setScene(new Scene(pane, 200, 100));
         stage.show();
 
+    }
+
+    private void deleteTopicFromList(String category) throws IOException {
+
+        ByteBuffer buffer = null;
+        String message = category + ";" + "delete";
+        buffer = ByteBuffer.wrap(message.getBytes());
+        buffer.rewind();
+        client.write(buffer);
+        buffer.clear();
+
+    }
+
+    private boolean validate() throws IOException {
+        int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
+        return Server.getListInfo().get(0).getSet()
+                .get(port)
+                .isEmpty();
     }
 
     private static String[] filter() {
