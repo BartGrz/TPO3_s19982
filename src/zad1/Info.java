@@ -2,6 +2,7 @@ package zad1;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import java.util.*;
 
 public class Info {
@@ -20,13 +21,20 @@ public class Info {
         if (category == null) {
             set.put(port, new HashSet<>());
         } else {
-            set.get(port).add(category);
+            if (!checkIfAlreadySubscribed(port, category)) {
+                set.get(port).add(category);
+            }
         }
     }
+
     public void deleteCategoryForPort(int port, String category) {
 
         set.get(port).remove(category);
-        System.out.println("deleted " + category + " from port " + port);
 
+    }
+
+    private boolean checkIfAlreadySubscribed(int port, String category) {
+
+        return set.get(port).stream().anyMatch(s -> s.equals(category));
     }
 }
