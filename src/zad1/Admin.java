@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -90,24 +91,35 @@ public class Admin {
         });
         textField.setText(getMessage());
         confirm.setOnAction(event -> {
-            try {
-                switch (operation.getValue().toString()) {
-                    case "DELETE":
-                        writeMesage("admin;" + comboBox.getValue().toString() + ";" + operation.getValue().toString() + ";" + null);
-                        break;
-                    case "ADD":
-                        writeMesage("admin;" + null + ";" + operation.getValue().toString() + ";" + textField.getText());
-                        break;
-                    case "SEND":
-                        writeMesage("admin;" + comboBox.getValue().toString() + ";" + operation.getValue().toString() + ";" + textField.getText());
-                        break;
+            if(textField.isVisible() && textField.getText()==null || comboBox.isVisible() && comboBox.getValue()==null || operation.getValue()==null) {
+                Pane error = new Pane();
+                Label forbiddenOperation = new Label(" operation forbidden, type message, choose topic and request operation type");
+                error.getChildren().add(forbiddenOperation);
+                Stage errorStage = new Stage();
+                errorStage.setScene(new Scene(error,420,100));
+                errorStage.show();
+                }else {
+
+                try {
+                    switch (operation.getValue().toString()) {
+                        case "DELETE":
+                            writeMesage("admin;" + comboBox.getValue().toString() + ";" + operation.getValue().toString() + ";" + null);
+                            break;
+                        case "ADD":
+                            writeMesage("admin;" + null + ";" + operation.getValue().toString() + ";" + textField.getText());
+                            break;
+                        case "SEND":
+                            writeMesage("admin;" + comboBox.getValue().toString() + ";" + operation.getValue().toString() + ";" + textField.getText());
+                            break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         });
 
     }
+
 
     /**
      * sending request to server
