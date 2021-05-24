@@ -39,9 +39,10 @@ public class Main extends Application {
 
             try {
 
-                Thread admin = new Thread(() -> Admin.main(tab));
-                Admin.start(new Stage());
-                admin.start();
+                Thread adminStart = new Thread(() -> Admin.main(tab));
+                Admin admin = new Admin();
+                admin.start(new Stage());
+                adminStart.start();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -57,14 +58,14 @@ public class Main extends Application {
                 Thread clientStrart = new Thread(() -> client.main(tab));
                 Thread client2Start = new Thread(() -> client2.main(tab));
                 Thread client3tart = new Thread(() -> client3.main(tab));
-
+                client2Start.start();
+                clientStrart.start();
+                client3tart.start();
                 client.start(new Stage());
                 client2.start(new Stage());
                 client3.start(new Stage());
 
-                client2Start.start();
-                clientStrart.start();
-                client3tart.start();
+
 
             } catch (Exception e) {
                 e.printStackTrace();
