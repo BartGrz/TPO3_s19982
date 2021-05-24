@@ -47,6 +47,7 @@ public class Client {
                     setMessage(mes);
                     String[] received = filter();
                     messages.put(received[0], received[1]);
+
                 }
             }
 
@@ -58,22 +59,21 @@ public class Client {
 
     public void start(Stage primaryStage) throws Exception {
         Pane pane = new Pane();
-
         ComboBox comboBox = new ComboBox();
-        ObservableList<String> pref = FXCollections.observableArrayList("celebryci", "kino", "randki", "sport");
+        ObservableList<String> pref = FXCollections.observableArrayList(Server.getListInfo().get(0).getActualCategories());
         comboBox.getItems().addAll(pref);
-        Button button = new Button("REFRESH");
+        Button refresh = new Button("REFRESH");
         Button subscribe = new Button("SUBSCRIBE");
         Button unsubscribe = new Button("UNSUBSCRIBE");
         Button subscibedTopics = new Button("TOPICS");
-        button.setLayoutY(40);
+        refresh.setLayoutY(40);
         comboBox.setLayoutY(80);
         subscribe.setLayoutY(120);
         subscibedTopics.setLayoutY(160);
         unsubscribe.setLayoutY(120);
         unsubscribe.setLayoutX(80);
         unsubscribe.setVisible(false);
-        pane.getChildren().addAll(button, comboBox, subscribe, subscibedTopics, unsubscribe);
+        pane.getChildren().addAll(refresh, comboBox, subscribe, subscibedTopics, unsubscribe);
         pane.setMaxSize(200, 200);
         pane.setMaxHeight(200);
         pane.setMaxWidth(200);
@@ -82,10 +82,11 @@ public class Client {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        button.setOnAction(event -> {
+        refresh.setOnAction(event -> {
 
             try {
                 popupWIthMessage();
+                validateCateogories(comboBox);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -121,11 +122,23 @@ public class Client {
         });
         unsubscribe.setOnAction(event -> {
             try {
-
+                int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
 
                 if (comboBox.getValue() == null) {
                     Pane paneError = new Pane();
                     Label label = new Label("you need to choose topic from list");
+                    paneError.getChildren().add(label);
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(paneError, 200, 100));
+                    stage.show();
+                } else if (!Server.getListInfo().get(0).getSet()
+                        .get(port)
+                        .stream()
+                        .filter(s -> s.equals(comboBox.getValue().toString()))
+                        .findAny()
+                        .isPresent()) {
+                    Pane paneError = new Pane();
+                    Label label = new Label("you are not subsribed to this topic, operation foribidden");
                     paneError.getChildren().add(label);
                     Stage stage = new Stage();
                     stage.setScene(new Scene(paneError, 200, 100));
@@ -145,6 +158,11 @@ public class Client {
         });
     }
 
+    /**
+     * enables sending message to server with category client want to subsribe to
+     * @param sub
+     * @throws IOException
+     */
     private void subscribe(String sub) throws IOException {
         if (sub == null) {
 
@@ -159,7 +177,11 @@ public class Client {
         buffer.clear();
     }
 
-
+    /**
+     * showing whole history of messages sended by admin managed by server
+     * @using map messages as a container
+     * @throws IOException
+     */
     private void popupWIthMessage() throws IOException {
         LocalDateTime time = LocalDateTime.now();
         time.format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -209,20 +231,25 @@ public class Client {
 
     }
 
-
+    /**
+     * @using method showTopicsClientIsSubscribedTo(int port) from info class
+     * showing all topics client is subsribed to
+     * @throws IOException
+     */
     private void subscribedElements() throws IOException {
+
         int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
         Stage stage = new Stage();
         Pane pane = new Pane();
         Label info = new Label();
         pane.getChildren().add(info);
+
         if (Server.getListInfo().get(0).getSet().values().stream().findAny().isPresent()) {
             info.setText("subsribed topics : " + Server.getListInfo()
                     .get(0)
-                    .getSet()
-                    .get(port)
+                    .showTopicsClientIsSubscribedTo(port)
                     .stream()
-                    .collect(Collectors.joining(" ")));
+                    .collect(Collectors.joining(", ")));
 
         } else {
             info.setText("you did not subsribed to any topics available");
@@ -232,6 +259,11 @@ public class Client {
 
     }
 
+    /**
+     * sending request to unsubsribed from choosen topic
+     * @param category
+     * @throws IOException
+     */
     private void deleteTopicFromList(String category) throws IOException {
 
         ByteBuffer buffer = null;
@@ -243,6 +275,12 @@ public class Client {
 
     }
 
+    /**
+     * method linked directly with unsubsribe button,
+     * button will be visible only if client is subsribed to any topic
+     * @return
+     * @throws IOException
+     */
     private boolean validate() throws IOException {
         int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
         return Server.getListInfo().get(0).getSet()
@@ -254,4 +292,18 @@ public class Client {
         return getMessage().split(";");
     }
 
+    /**
+     * method linked with comboBox field,
+     * checking if client list of topics is equal to possible topics in class info managed by server
+     * @param comboBox
+     */
+    private void validateCateogories(ComboBox comboBox) {
+        for (String s : Server.getListInfo().get(0).getActualCategories()) {
+            if (!comboBox.getItems().stream().anyMatch(o -> o.equals(s))) {
+                comboBox.getItems().add(s);
+            } else {
+                comboBox.getItems().removeIf(o -> !o.equals(s));
+            }
+        }
+    }
 }
