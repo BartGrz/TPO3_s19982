@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Admin class
  * sending messages to server , update/delete topics
  */
-public class Admin   {
+public class Admin {
     @Getter
     @Setter
     private static String message;
@@ -31,7 +31,7 @@ public class Admin   {
     public static void main(String[] args) {
 
         try {
-             admin = SocketChannel.open(new InetSocketAddress("localhost", 8089));
+            admin = SocketChannel.open(new InetSocketAddress("localhost", 8089));
 
             while (true) {
 
@@ -41,7 +41,6 @@ public class Admin   {
         }
     }
 
-    //TODO : trzeba dodac mozliwosc edycji(dodawania) i usuwania tematów
     public void start(Stage primaryStage) throws Exception {
 
         Pane pane = new Pane();
@@ -51,8 +50,8 @@ public class Admin   {
         ComboBox comboBox = new ComboBox();
         ComboBox operation = new ComboBox();
 
-        ObservableList<String> pref = FXCollections.observableArrayList("politics","celebrities","sport","economy");
-        ObservableList<String> possibleOperations = FXCollections.observableArrayList("SEND","DELETE","ADD");
+        ObservableList<String> pref = FXCollections.observableArrayList("politics", "celebrities", "sport", "economy");
+        ObservableList<String> possibleOperations = FXCollections.observableArrayList("SEND", "DELETE", "ADD");
 
         comboBox.getItems().addAll(pref);
         operation.getItems().addAll(possibleOperations);
@@ -60,8 +59,8 @@ public class Admin   {
         comboBox.setLayoutX(150);
         operation.setLayoutX(250);
 
-        pane.getChildren().addAll(textField, operation,comboBox,confirm);
-        pane.setMaxSize(200,200);
+        pane.getChildren().addAll(textField, operation, comboBox, confirm);
+        pane.setMaxSize(200, 200);
         pane.setMaxHeight(200);
         pane.setMaxWidth(200);
         primaryStage.setScene(new Scene(pane, 400, 100));
@@ -70,33 +69,33 @@ public class Admin   {
         primaryStage.show();
 
         operation.setOnAction(event -> {
-         if(operation.getValue().toString().equals("ADD")) {
-             textField.setVisible(true);
-             comboBox.setVisible(false);
-             operation.setLayoutX(150);
-             confirm.setLayoutX(250);
-         }else if (operation.getValue().toString().equals("DELETE")) {
-             textField.setVisible(false);
-             confirm.setLayoutX(200);
-             comboBox.setLayoutX(0);
-             operation.setLayoutX(100);
-         }else {
-             validateCateogories(comboBox);
-             textField.setVisible(true);
-             comboBox.setVisible(true);
-             confirm.setLayoutX(330);
-             comboBox.setLayoutX(150);
-             operation.setLayoutX(250);
-         }
+            if (operation.getValue().toString().equals("ADD")) {
+                textField.setVisible(true);
+                comboBox.setVisible(false);
+                operation.setLayoutX(150);
+                confirm.setLayoutX(250);
+            } else if (operation.getValue().toString().equals("DELETE")) {
+                textField.setVisible(false);
+                confirm.setLayoutX(200);
+                comboBox.setLayoutX(0);
+                operation.setLayoutX(100);
+            } else {
+                validateCateogories(comboBox);
+                textField.setVisible(true);
+                comboBox.setVisible(true);
+                confirm.setLayoutX(330);
+                comboBox.setLayoutX(150);
+                operation.setLayoutX(250);
+            }
         });
         textField.setText(getMessage());
         confirm.setOnAction(event -> {
             try {
-                switch (operation.getValue().toString()){
-                    case "DELETE" :
+                switch (operation.getValue().toString()) {
+                    case "DELETE":
                         writeMesage("admin;" + comboBox.getValue().toString() + ";" + operation.getValue().toString() + ";" + null);
                         break;
-                    case "ADD" :
+                    case "ADD":
                         writeMesage("admin;" + null + ";" + operation.getValue().toString() + ";" + textField.getText());
                         break;
                     case "SEND":
@@ -109,19 +108,33 @@ public class Admin   {
         });
 
     }
+
+    /**
+     * sending request to server
+     *
+     * @param message
+     * @throws IOException
+     */
     private static void writeMesage(String message) throws IOException {
 
-        ByteBuffer buffer= ByteBuffer.wrap(message.getBytes());
+        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
         buffer.rewind();
         admin.write(buffer); //wysylanie do serwera
         buffer.clear();
     }
-    private void validateCateogories (ComboBox comboBox){
-        for(String s : Server.getListInfo().get(0).getActualCategories()){
-            if(!comboBox.getItems().stream().anyMatch(o -> o.equals(s))) {
+
+    /**
+     * method linked with comboBox field,
+     * checking if admin list of topics is equal to possible topics in class info managed by server
+     *
+     * @param comboBox
+     */
+    private void validateCateogories(ComboBox comboBox) {
+        for (String s : Server.getListInfo().get(0).getActualCategories()) {
+            if (!comboBox.getItems().stream().anyMatch(o -> o.equals(s))) {
                 comboBox.getItems().add(s);
-            }else {
-             comboBox.getItems().removeIf(o -> !o.equals(s));
+            } else {
+                comboBox.getItems().removeIf(o -> !o.equals(s));
             }
         }
     }
