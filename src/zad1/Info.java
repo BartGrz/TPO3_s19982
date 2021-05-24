@@ -22,6 +22,11 @@ public class Info {
     @Getter
     private List<String> actualCategories = new ArrayList<>(Arrays.asList("politics", "celebrities", "sport", "economy"));
 
+    /**
+     * when client is connected, its info about port and topics is subsribed is stored in map
+     * @param port
+     * @param category
+     */
     public void linkPortWithCategory(int port, String category) {
 
         if (category == null) {
@@ -33,29 +38,50 @@ public class Info {
         }
     }
 
+    /**
+     * deleting topic from set for chosen port (client)
+     * @param port
+     * @param category
+     */
     public void deleteCategoryForPort(int port, String category) {
         set.get(port).remove(category);
 
     }
 
+    /**
+     * method checks if port(client) trying to subsribed to topic it is already subscribed to
+     * @param port
+     * @param category
+     * @return true if topic is on client subsribed topics list
+     */
     private boolean checkIfAlreadySubscribed(int port, String category) {
         return set.get(port).stream().anyMatch(s -> s.equals(category));
     }
 
+    /**
+     * adding topic to available topics list
+     * @param category
+     */
     public void addTopic(String category) {
         actualCategories.add(category);
         System.out.println("category:" + category + " added  to list ");
     }
-
+    /**
+     * adding topic to available topics list
+     * @param category
+     */
     public void deleteTopic(String category) {
         if (actualCategories.stream().anyMatch(s -> s.equals(category))) {
             actualCategories.remove(category);
-            System.out.println("category:" + category + " deleted from list ");
         } else {
-            System.out.println("category is not on list");
+
         }
     }
 
+    /**
+     * Checking if port(client) has updated list of possible topics
+     * @param port
+     */
     private void validateIfPortHasActualCategories(int port) {
         for (Iterator<String> it = set.get(port).iterator(); it.hasNext(); ) {
             String missing = it.next();
@@ -65,6 +91,13 @@ public class Info {
             }
         }
     }
+
+    /**
+     * showing list of all topics choosen port(client) is subscribed to
+     * @usedBy Client class only
+     * @param port
+     * @return
+     */
     public List<String> showTopicsClientIsSubscribedTo(int port){
         validateIfPortHasActualCategories(port);
         return set.get(port).stream().collect(Collectors.toList());

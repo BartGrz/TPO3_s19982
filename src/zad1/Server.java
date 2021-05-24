@@ -16,9 +16,15 @@ public class Server {
     @Getter
     private static List<Info> listInfo = new ArrayList<>();
 
+
     public static void main(String[] args) {
 
         try {
+
+            /**
+             * main logic,getting key if client trying to connect checking if key is prepared for possible operations
+             * @param args
+             */
             selector = Selector.open();
             ServerSocketChannel socket = ServerSocketChannel.open();
             socket.bind(new InetSocketAddress("localhost", 8089));
@@ -27,8 +33,8 @@ public class Server {
             listInfo.add(info);
             while (true) {
 
-                selector.selectNow();
-                Set<SelectionKey> selectedKeys = selector.selectedKeys();
+                selector.selectNow(); //selector is now gathering possible connection and preparing SelectionKeys
+                Set<SelectionKey> selectedKeys = selector.selectedKeys(); //stored SelectionKeys
 
                 for (Iterator<SelectionKey> it = selectedKeys.iterator(); it.hasNext(); ) {
                     SelectionKey key = it.next();
@@ -47,17 +53,26 @@ public class Server {
         }
     }
 
-
+    /**
+     * accepting the key from fresh connection
+     * accepting serverSocketChannel and creating SocketChannel for key method get by selector
+     * @param key
+     * @throws IOException
+     */
     private static void handleAccept(SelectionKey key) throws IOException {
 
         SocketChannel client = ((ServerSocketChannel) key.channel()).accept();
         System.out.println(serverInfo + " connection accepted from " + client.socket().getPort());
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
-        //  selector.wakeup();
-
     }
-    //TODO : trzeba dodac mozliwosc edycji(dodawania) i usuwania tematów na podstawie wiadomosci od admina za posrednictwem klasy info
+
+    /**
+     * handle reading, if key is readable, read messages from clients and admin
+     * managing requests using Info class and its methods
+     * @param key
+     * @throws IOException
+     */
     private static void handleReading(SelectionKey key) throws IOException {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -101,7 +116,11 @@ public class Server {
         }
     }
 
-
+    /**
+     * handle writing operation if ADMIN key is writable, broadcasting messages to clients subsribed to choosen topic
+     * @param key
+     * @throws IOException
+     */
     private static void handleWriting(SelectionKey key) throws IOException {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
