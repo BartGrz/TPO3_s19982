@@ -57,7 +57,7 @@ public class Server {
         //  selector.wakeup();
 
     }
-
+    //TODO : trzeba dodac mozliwosc edycji(dodawania) i usuwania tematów na podstawie wiadomosci od admina za posrednictwem klasy info
     private static void handleReading(SelectionKey key) throws IOException {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -69,10 +69,24 @@ public class Server {
         String[] mes = data.split(";");
 
         if (mes[0].equals("admin")) {
-            info.setAdminChosenCategory(mes[1]);
-            info.setAdminMessage(mes[2]);
             SocketChannel admin = (SocketChannel) key.channel();
-            admin.register(selector, SelectionKey.OP_WRITE);
+            switch (mes[2]) {
+                case "SEND" :
+                    info.setAdminChosenCategory(mes[1]);
+                    info.setAdminMessage(mes[3]);
+                    admin.register(selector, SelectionKey.OP_WRITE);
+                    break;
+                case "DELETE":
+                    info.setAdminMessage(" topic has been removed by admin");
+                    info.setAdminChosenCategory(mes[1]);
+                    info.deleteTopic(mes[1]);
+                    admin.register(selector, SelectionKey.OP_WRITE);
+                    break;
+                case "ADD" :
+                    info.addTopic(mes[3]);
+                    break;
+            }
+
         } else {
             if (!info.getSet().keySet().stream().anyMatch(integer -> integer == socketChannel.socket().getPort())) {
                 info.linkPortWithCategory(socketChannel.socket().getPort(), null);
@@ -96,22 +110,24 @@ public class Server {
             for (SelectionKey selectionKey : selector.keys()) {
                 if (selectionKey.channel() instanceof SocketChannel) {
                     SocketChannel channel = (SocketChannel) selectionKey.channel();
-
-                    if (info.getSet().get(channel.socket().getPort()) != null
-                            && info.getSet().get(channel.socket().getPort())
+                    int port = channel.socket().getPort();
+                    if (info.getSet().get(port) != null
+                            && info.getSet().get(port)
                             .stream()
                             .anyMatch(s -> s.equals(info.getAdminChosenCategory()))
                     ) {
+
                         String messageReturn = info.getAdminChosenCategory() + ";" + info.getAdminMessage();
                         buffer.put(messageReturn.getBytes());
                         buffer.rewind();
                         channel.write(buffer);
-                        System.out.println(messageReturn);
+
 
                     }
                     channel.register(selector, SelectionKey.OP_READ);
                 }
                 buffer.clear();
+
             }
         } else {
             socketChannel.register(selector, SelectionKey.OP_READ);
