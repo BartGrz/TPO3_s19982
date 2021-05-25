@@ -82,11 +82,12 @@ public class Client {
         primaryStage.setResizable(false);
         primaryStage.show();
 
+        comboBox.setOnMouseClicked(event -> validateCategories(comboBox));
         refresh.setOnAction(event -> {
 
             try {
                 popupWIthMessage();
-                validateCateogories(comboBox);
+                validateCategories(comboBox);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -297,7 +298,7 @@ public class Client {
      * checking if client list of topics is equal to possible topics in class info managed by server
      * @param comboBox
      */
-    private void validateCateogories(ComboBox comboBox) {
+    private void validateCategories(ComboBox comboBox) {
         for (String s : Server.getListInfo().get(0).getActualCategories()) {
             if (!comboBox.getItems().stream().anyMatch(o -> o.equals(s))) {
                 comboBox.getItems().add(s);
