@@ -55,7 +55,7 @@ public class Client {
         }
     }
 
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage)   {
         Pane pane = new Pane();
         ComboBox comboBox = new ComboBox();
         ObservableList<String> pref = FXCollections.observableArrayList("politics", "celebrities", "sport", "economy");
@@ -298,10 +298,11 @@ public class Client {
 
     /**
      * validate and update client list of subscribed topics ,in case the admin delete the topic
+     *
      * @param topics
      */
     private void validateCategories(Set<String> topics) {
-        for (String s :topics ) {
+        for (String s : topics) {
             if (Server.getListInfo().get(0).getActualCategories().stream().anyMatch(topic -> topic.equals(s))) {
             } else {
                 topics.remove(s);
