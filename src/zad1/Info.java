@@ -45,7 +45,6 @@ public class Info {
      */
     public void deleteCategoryForPort(int port, String category) {
         set.get(port).remove(category);
-
     }
 
     /**
@@ -64,7 +63,6 @@ public class Info {
      */
     public void addTopic(String category) {
         actualCategories.add(category);
-        System.out.println("category:" + category + " added  to list ");
     }
     /**
      * adding topic to available topics list
@@ -102,5 +100,4 @@ public class Info {
         validateIfPortHasActualCategories(port);
         return set.get(port).stream().collect(Collectors.toList());
     }
-
 }
