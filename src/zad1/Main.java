@@ -58,8 +58,8 @@ public class Main extends Application {
                 Thread clientStrart = new Thread(() -> client.main(tab));
                 Thread client2Start = new Thread(() -> client2.main(tab));
                 Thread client3tart = new Thread(() -> client3.main(tab));
-                client2Start.start();
                 clientStrart.start();
+                client2Start.start();
                 client3tart.start();
                 client.start(new Stage());
                 client2.start(new Stage());
