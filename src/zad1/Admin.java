@@ -77,6 +77,7 @@ public class Admin {
                 confirm.setLayoutX(250);
             } else if (operation.getValue().toString().equals("DELETE")) {
                 textField.setVisible(false);
+                comboBox.setVisible(true);
                 confirm.setLayoutX(200);
                 comboBox.setLayoutX(0);
                 operation.setLayoutX(100);
