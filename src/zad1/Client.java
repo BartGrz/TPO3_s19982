@@ -27,7 +27,7 @@ public class Client {
     @Getter
     public static SocketChannel client;
     private static Map<String, String> messages = new HashMap<>();
-    private List<String> subscibedTopics = new ArrayList<>();
+    private static Set<String> subscribedTopics = new HashSet<>();
 
 
     public static void main(String[] args) {
@@ -47,7 +47,6 @@ public class Client {
                     setMessage(mes);
                     String[] received = filter();
                     messages.put(received[0], received[1]);
-
                 }
             }
 
@@ -56,11 +55,10 @@ public class Client {
         }
     }
 
-
     public void start(Stage primaryStage) throws Exception {
         Pane pane = new Pane();
         ComboBox comboBox = new ComboBox();
-        ObservableList<String> pref = FXCollections.observableArrayList(Server.getListInfo().get(0).getActualCategories());
+        ObservableList<String> pref = FXCollections.observableArrayList("politics", "celebrities", "sport", "economy");
         comboBox.getItems().addAll(pref);
         Button refresh = new Button("REFRESH");
         Button subscribe = new Button("SUBSCRIBE");
@@ -86,7 +84,7 @@ public class Client {
         refresh.setOnAction(event -> {
 
             try {
-                popupWIthMessage();
+                popupWithMessage();
                 validateCategories(comboBox);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -103,7 +101,6 @@ public class Client {
                     Stage stage = new Stage();
                     stage.setScene(new Scene(paneError, 200, 100));
                     stage.show();
-
                 } else {
                     subscribe(comboBox.getValue().toString() + ";" + tab[1]);
                     comboBox.setValue(null);
@@ -123,30 +120,29 @@ public class Client {
         });
         unsubscribe.setOnAction(event -> {
             try {
-                int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
 
                 if (comboBox.getValue() == null) {
                     Pane paneError = new Pane();
                     Label label = new Label("you need to choose topic from list");
                     paneError.getChildren().add(label);
                     Stage stage = new Stage();
-                    stage.setScene(new Scene(paneError, 200, 100));
+                    stage.setScene(new Scene(paneError, 250, 100));
                     stage.show();
-                } else if (!Server.getListInfo().get(0).getSet()
-                        .get(port)
+                    unsubscribe.setVisible(true);
+
+                } else if (!subscribedTopics
                         .stream()
-                        .filter(s -> s.equals(comboBox.getValue().toString()))
-                        .findAny()
-                        .isPresent()) {
+                        .anyMatch(s -> s.equals(comboBox.getValue().toString()))) {
                     Pane paneError = new Pane();
                     Label label = new Label("you are not subsribed to this topic, operation foribidden");
                     paneError.getChildren().add(label);
                     Stage stage = new Stage();
-                    stage.setScene(new Scene(paneError, 200, 100));
+                    stage.setScene(new Scene(paneError, 350, 100));
                     stage.show();
                 } else {
                     deleteTopicFromList(comboBox.getValue().toString());
                 }
+
                 Thread.sleep(20);
                 unsubscribe.setVisible(!validate());
                 comboBox.setValue(null);
@@ -161,16 +157,14 @@ public class Client {
 
     /**
      * enables sending message to server with category client want to subsribe to
+     *
      * @param sub
      * @throws IOException
      */
     private void subscribe(String sub) throws IOException {
-        if (sub == null) {
 
-        }
         String splitted[] = sub.split(";");
-
-        subscibedTopics.add(splitted[0]);
+        subscribedTopics.add(splitted[0]);
         ByteBuffer buffer = null;
         buffer = ByteBuffer.wrap(sub.getBytes());
         buffer.rewind();
@@ -180,13 +174,13 @@ public class Client {
 
     /**
      * showing whole history of messages sended by admin managed by server
-     * @using map messages as a container
+     *
      * @throws IOException
+     * @using map messages as a container
      */
-    private void popupWIthMessage() throws IOException {
+    private static void popupWithMessage() throws IOException {
         LocalDateTime time = LocalDateTime.now();
         time.format(DateTimeFormatter.BASIC_ISO_DATE);
-        int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
         List<Label> labels = new ArrayList<>();
 
         Stage stage = new Stage();
@@ -201,8 +195,7 @@ public class Client {
         for (Iterator<String> it = messages.keySet().iterator(); it.hasNext(); ) {
 
             String key = it.next();
-            if (Server.getListInfo().get(0).getSet().get(port).stream().anyMatch(s -> s.equals(key))) {
-
+            if (subscribedTopics.stream().anyMatch(s -> s.equals(key))) {
 
                 Label messageInfo = new Label(info.getText() + " " + key);
                 Label message = new Label(label.getText() + " " + messages.get(key));
@@ -229,63 +222,57 @@ public class Client {
         stage.setScene(new Scene(pane, 400, 200));
         stage.setTitle("Message from Admin");
         stage.show();
-
     }
 
     /**
+     * @throws IOException
      * @using method showTopicsClientIsSubscribedTo(int port) from info class
      * showing all topics client is subsribed to
-     * @throws IOException
      */
     private void subscribedElements() throws IOException {
 
-        int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
         Stage stage = new Stage();
         Pane pane = new Pane();
         Label info = new Label();
         pane.getChildren().add(info);
-
-        if (Server.getListInfo().get(0).getSet().values().stream().findAny().isPresent()) {
-            info.setText("subsribed topics : " + Server.getListInfo()
-                    .get(0)
-                    .showTopicsClientIsSubscribedTo(port)
+        validateCategories(subscribedTopics);
+        if (subscribedTopics.stream().findAny().isPresent()) {
+            info.setText("subsribed topics : " + subscribedTopics
                     .stream()
                     .collect(Collectors.joining(", ")));
 
         } else {
             info.setText("you did not subsribed to any topics available");
         }
-        stage.setScene(new Scene(pane, 200, 100));
+        stage.setScene(new Scene(pane, 350, 100));
         stage.show();
-
     }
 
     /**
      * sending request to unsubsribed from choosen topic
+     *
      * @param category
      * @throws IOException
      */
     private void deleteTopicFromList(String category) throws IOException {
-
+        subscribedTopics.remove(category);
         ByteBuffer buffer = null;
         String message = category + ";" + "delete";
         buffer = ByteBuffer.wrap(message.getBytes());
         buffer.rewind();
         client.write(buffer);
         buffer.clear();
-
     }
 
     /**
      * method linked directly with unsubsribe button,
      * button will be visible only if client is subsribed to any topic
+     *
      * @return
      * @throws IOException
      */
-    private boolean validate() throws IOException {
-        int port = Integer.parseInt(client.getLocalAddress().toString().split(":")[1]);
-        return Server.getListInfo().get(0).getSet()
-                .get(port)
+    private boolean validate() throws IOException { // FIXED : te informacje powinny byc aktualizowane w klasie client, przesylane z serwaera (wrzucic do Set<String>
+        return subscribedTopics
                 .isEmpty();
     }
 
@@ -296,6 +283,7 @@ public class Client {
     /**
      * method linked with comboBox field,
      * checking if client list of topics is equal to possible topics in class info managed by server
+     *
      * @param comboBox
      */
     private void validateCategories(ComboBox comboBox) {
@@ -305,6 +293,20 @@ public class Client {
             } else {
                 comboBox.getItems().removeIf(o -> !o.equals(s));
             }
+        }
+    }
+
+    /**
+     * validate and update client list of subscribed topics ,in case the admin delete the topic
+     * @param topics
+     */
+    private void validateCategories(Set<String> topics) {
+        for (String s :topics ) {
+            if (Server.getListInfo().get(0).getActualCategories().stream().anyMatch(topic -> topic.equals(s))) {
+            } else {
+                topics.remove(s);
+            }
+
         }
     }
 }
