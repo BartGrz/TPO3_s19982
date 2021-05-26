@@ -140,8 +140,6 @@ public class Server {
                         buffer.put(messageReturn.getBytes());
                         buffer.rewind();
                         channel.write(buffer);
-
-
                     }
                     channel.register(selector, SelectionKey.OP_READ);
                 }

@@ -69,6 +69,8 @@ public class Admin {
         primaryStage.setTitle("ADMIN");
         primaryStage.show();
 
+        comboBox.setOnMouseClicked(event -> validateCategories(comboBox));
+
         operation.setOnAction(event -> {
             if (operation.getValue().toString().equals("ADD")) {
                 textField.setVisible(true);
@@ -82,7 +84,7 @@ public class Admin {
                 comboBox.setLayoutX(0);
                 operation.setLayoutX(100);
             } else {
-                validateCateogories(comboBox);
+                validateCategories(comboBox);
                 textField.setVisible(true);
                 comboBox.setVisible(true);
                 confirm.setLayoutX(330);
@@ -142,7 +144,7 @@ public class Admin {
      *
      * @param comboBox
      */
-    private void validateCateogories(ComboBox comboBox) {
+    private void validateCategories(ComboBox comboBox) {
         for (String s : Server.getListInfo().get(0).getActualCategories()) {
             if (!comboBox.getItems().stream().anyMatch(o -> o.equals(s))) {
                 comboBox.getItems().add(s);

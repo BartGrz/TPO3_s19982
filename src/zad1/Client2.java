@@ -191,11 +191,9 @@ public class Client2 {
         info.setLayoutY(0);
         label.setLayoutY(20);
 
-        int i = 0;
         for (Iterator<String> it = messages.keySet().iterator(); it.hasNext(); ) {
 
             String key = it.next();
-            if (subscribedTopics.stream().anyMatch(s -> s.equals(key))) {
 
                 Label messageInfo = new Label(info.getText() + " " + key);
                 Label message = new Label(label.getText() + " " + messages.get(key));
@@ -208,8 +206,7 @@ public class Client2 {
 
                 info.setLayoutY(messageInfo.getLayoutY() + 20);
                 label.setLayoutY(message.getLayoutY() + 20);
-                i += 1;
-            }
+
         }
         if (labels.isEmpty()) {
             label.setText("there are no messages available at the moment for topics you subsribed to");
