@@ -1,5 +1,6 @@
 package zad1;
 
+import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -16,26 +17,39 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Admin class
  * sending messages to server , update/delete topics
  */
-public class Admin {
+public class Admin extends Application {
     @Getter
     @Setter
     private static String message;
     private static SocketChannel admin;
+    private static List<String> topics = Arrays.asList("politics", "celebrities", "sport", "economy");
+    private static Set<String> actualCategoriesSetList = new HashSet<>();
 
 
     public static void main(String[] args) {
 
+        //   Thread gui = new Thread(()->launch(args));
+        actualCategoriesSetList.addAll(topics);
         try {
             admin = SocketChannel.open(new InetSocketAddress("localhost", 8089));
 
             while (true) {
-
+               /*
+                it is only for checking if all three components (server,client,admin) will worked if run separately
+                if(!gui.isAlive()){
+                    gui.start();
+                }
+                 */
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -51,7 +65,7 @@ public class Admin {
         ComboBox comboBox = new ComboBox();
         ComboBox operation = new ComboBox();
 
-        ObservableList<String> pref = FXCollections.observableArrayList("politics", "celebrities", "sport", "economy");
+        ObservableList<String> pref = FXCollections.observableArrayList(topics);
         ObservableList<String> possibleOperations = FXCollections.observableArrayList("SEND", "DELETE", "ADD");
 
         comboBox.getItems().addAll(pref);
@@ -68,6 +82,8 @@ public class Admin {
         primaryStage.setResizable(false);
         primaryStage.setTitle("ADMIN");
         primaryStage.show();
+
+        comboBox.setOnMouseClicked(event -> validateCateogories(comboBox));
 
         operation.setOnAction(event -> {
             if (operation.getValue().toString().equals("ADD")) {
@@ -92,21 +108,23 @@ public class Admin {
         });
         textField.setText(getMessage());
         confirm.setOnAction(event -> {
-            if(textField.isVisible() && textField.getText()==null || comboBox.isVisible() && comboBox.getValue()==null || operation.getValue()==null) {
+            if (textField.isVisible() && textField.getText() == null || comboBox.isVisible() && comboBox.getValue() == null || operation.getValue() == null) {
                 Pane error = new Pane();
                 Label forbiddenOperation = new Label(" operation forbidden, type message, choose topic and request operation type");
                 error.getChildren().add(forbiddenOperation);
                 Stage errorStage = new Stage();
-                errorStage.setScene(new Scene(error,420,100));
+                errorStage.setScene(new Scene(error, 420, 100));
                 errorStage.show();
-                }else {
+            } else {
 
                 try {
                     switch (operation.getValue().toString()) {
                         case "DELETE":
+                            actualCategoriesSetList.remove(comboBox.getValue().toString());
                             writeMesage("admin;" + comboBox.getValue().toString() + ";" + operation.getValue().toString() + ";" + null);
                             break;
                         case "ADD":
+                            actualCategoriesSetList.add(textField.getText());
                             writeMesage("admin;" + null + ";" + operation.getValue().toString() + ";" + textField.getText());
                             break;
                         case "SEND":
@@ -143,7 +161,7 @@ public class Admin {
      * @param comboBox
      */
     private void validateCateogories(ComboBox comboBox) {
-        for (String s : Server.getListInfo().get(0).getActualCategories()) {
+        for (String s : actualCategoriesSetList) {
             if (!comboBox.getItems().stream().anyMatch(o -> o.equals(s))) {
                 comboBox.getItems().add(s);
             } else {

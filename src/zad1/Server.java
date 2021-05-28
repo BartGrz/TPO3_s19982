@@ -92,13 +92,12 @@ public class Server {
                     admin.register(selector, SelectionKey.OP_WRITE);
                     break;
                 case "DELETE":
-                    info.setAdminMessage(" topic has been removed by admin");
-                    info.setAdminChosenCategory(mes[1]);
                     info.deleteTopic(mes[1]);
                     admin.register(selector, SelectionKey.OP_WRITE);
                     break;
                 case "ADD" :
                     info.addTopic(mes[3]);
+                    admin.register(selector, SelectionKey.OP_WRITE);
                     break;
             }
 
@@ -124,7 +123,7 @@ public class Server {
     private static void handleWriting(SelectionKey key) throws IOException {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        if (info.getAdminMessage() != null) {
+     //   if (info.getAdminMessage() != null) {
             ByteBuffer buffer = ByteBuffer.allocate(1024);
             for (SelectionKey selectionKey : selector.keys()) {
                 if (selectionKey.channel() instanceof SocketChannel) {
@@ -142,14 +141,28 @@ public class Server {
                         channel.write(buffer);
 
 
+                    }else{
+                        System.out.println(serverInfo + info.getActualCategories());
+                        buffer.put("actualTopics;".getBytes());
+                        for (int i = 0 ; i<info.getActualCategories().size();i++) {
+                            if (i + 1 != info.getActualCategories().size()) {
+                                String s = info.getActualCategories().get(i) + ",";
+                                buffer.put(s.getBytes());
+                            } else {
+                                String s = info.getActualCategories().get(i);
+                                buffer.put(s.getBytes());
+                            }
+                        }
+                        buffer.rewind();
+                        channel.write(buffer);
                     }
                     channel.register(selector, SelectionKey.OP_READ);
                 }
                 buffer.clear();
 
             }
-        } else {
+
             socketChannel.register(selector, SelectionKey.OP_READ);
-        }
+
     }
 }

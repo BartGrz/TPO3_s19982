@@ -71,6 +71,7 @@ public class Info {
     public void deleteTopic(String category) {
         if (actualCategories.stream().anyMatch(s -> s.equals(category))) {
             actualCategories.remove(category);
+            System.out.println("category " + category + " removed");
         } else {
 
         }
