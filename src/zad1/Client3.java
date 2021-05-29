@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Client3 extends Application {
+public class Client3   {
     @Getter
     @Setter
     static private String message;
@@ -66,7 +66,6 @@ public class Client3 extends Application {
                             actualTopicsSetList.add(categories[i]);
                         }
                         setUpdated(true);
-                        System.out.println(actualTopicsSetList);
                     } else {
                         setMessage(mes);
                         String[] received = filter();

@@ -21,9 +21,12 @@ public class Info {
     private Map<Integer, Set<String>> set = new HashMap();
     @Getter
     private List<String> actualCategories = new ArrayList<>(Arrays.asList("politics", "celebrities", "sport", "economy"));
+    @Getter
+    @Setter
+    private boolean updated ;
 
     /**
-     * when client is connected, its info about port and topics is subsribed is stored in map
+     * when client is connected, its info about port and topics client is subscribed to is stored in map
      * @param port
      * @param category
      */
@@ -71,7 +74,6 @@ public class Info {
     public void deleteTopic(String category) {
         if (actualCategories.stream().anyMatch(s -> s.equals(category))) {
             actualCategories.remove(category);
-            System.out.println("category " + category + " removed");
         } else {
 
         }

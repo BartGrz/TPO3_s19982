@@ -56,6 +56,7 @@ public class Server {
     /**
      * accepting the key from fresh connection
      * accepting serverSocketChannel and creating SocketChannel for key method get by selector
+     *
      * @param key
      * @throws IOException
      */
@@ -70,6 +71,7 @@ public class Server {
     /**
      * handle reading, if key is readable, read messages from clients and admin
      * managing requests using Info class and its methods
+     *
      * @param key
      * @throws IOException
      */
@@ -86,16 +88,21 @@ public class Server {
         if (mes[0].equals("admin")) {
             SocketChannel admin = (SocketChannel) key.channel();
             switch (mes[2]) {
-                case "SEND" :
+                case "SEND":
+                    info.setUpdated(false);
                     info.setAdminChosenCategory(mes[1]);
                     info.setAdminMessage(mes[3]);
                     admin.register(selector, SelectionKey.OP_WRITE);
                     break;
                 case "DELETE":
+                    info.setAdminChosenCategory("");
+                    info.setUpdated(true);
                     info.deleteTopic(mes[1]);
                     admin.register(selector, SelectionKey.OP_WRITE);
                     break;
-                case "ADD" :
+                case "ADD":
+                    info.setAdminChosenCategory("");
+                    info.setUpdated(true);
                     info.addTopic(mes[3]);
                     admin.register(selector, SelectionKey.OP_WRITE);
                     break;
@@ -105,10 +112,9 @@ public class Server {
             if (!info.getSet().keySet().stream().anyMatch(integer -> integer == socketChannel.socket().getPort())) {
                 info.linkPortWithCategory(socketChannel.socket().getPort(), null);
             }
-            if(mes[1].equals("delete")) {
-                info.deleteCategoryForPort(socketChannel.socket().getPort(),mes[0]);
-                System.out.println(info.getSet().get(socketChannel.socket().getPort()));
-            }else {
+            if (mes[1].equals("delete")) {
+                info.deleteCategoryForPort(socketChannel.socket().getPort(), mes[0]);
+            } else {
                 info.linkPortWithCategory(socketChannel.socket().getPort(), mes[0]);
                 socketChannel.register(selector, SelectionKey.OP_READ);
             }
@@ -116,14 +122,15 @@ public class Server {
     }
 
     /**
-     * handle writing operation if ADMIN key is writable, broadcasting messages to clients subsribed to choosen topic
+     * handle writing operation if ADMIN key is writable, broadcasting messages to clients subsribed to choosen topic, or
+     *
      * @param key
      * @throws IOException
      */
     private static void handleWriting(SelectionKey key) throws IOException {
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
-     //   if (info.getAdminMessage() != null) {
+       // if (info.getAdminMessage() != null) {
             ByteBuffer buffer = ByteBuffer.allocate(1024);
             for (SelectionKey selectionKey : selector.keys()) {
                 if (selectionKey.channel() instanceof SocketChannel) {
@@ -140,11 +147,9 @@ public class Server {
                         buffer.rewind();
                         channel.write(buffer);
 
-
-                    }else{
-                        System.out.println(serverInfo + info.getActualCategories());
+                    } else if(info.isUpdated()) {
                         buffer.put("actualTopics;".getBytes());
-                        for (int i = 0 ; i<info.getActualCategories().size();i++) {
+                        for (int i = 0; i < info.getActualCategories().size(); i++) {
                             if (i + 1 != info.getActualCategories().size()) {
                                 String s = info.getActualCategories().get(i) + ",";
                                 buffer.put(s.getBytes());
@@ -160,9 +165,10 @@ public class Server {
                 }
                 buffer.clear();
 
-            }
 
             socketChannel.register(selector, SelectionKey.OP_READ);
+
+        }
 
     }
 }

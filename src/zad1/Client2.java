@@ -1,5 +1,6 @@
 package zad1;
 
+import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -20,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Client2 {
+public class Client2  {
     @Getter
     @Setter
     static private String message;
@@ -37,18 +38,26 @@ public class Client2 {
 
     public static void main(String[] args) {
 
+        //  Thread gui = new Thread(()->launch(args));
+
         try {
             client = SocketChannel.open(new InetSocketAddress("localhost", 8089));
             actualTopicsSetList.addAll(topics);
             while (true) {
 
+                /*
+                it is only for checking if all three components (server,client,admin) will worked if run separately
+                if(!gui.isAlive()){
+                    gui.start();
+                }
+                 */
                 ByteBuffer buffer = ByteBuffer.allocate(1024);
                 String mes = null;
                 client.read(buffer); //odczyt od serwera
                 buffer.rewind();
                 buffer.clear();
                 mes = new String(buffer.array()).trim();
-                String tab [] = mes.split(";");
+                String tab[] = mes.split(";");
                 if (mes.length() > 0) {
                     if (tab[0].equals("actualTopics")) {
                         String categories[] = tab[1].split(",");
@@ -57,7 +66,6 @@ public class Client2 {
                             actualTopicsSetList.add(categories[i]);
                         }
                         setUpdated(true);
-                        System.out.println(actualTopicsSetList);
                     } else {
                         setMessage(mes);
                         String[] received = filter();
@@ -72,7 +80,7 @@ public class Client2 {
         }
     }
 
-    public void start(Stage primaryStage)   {
+    public void start(Stage primaryStage) {
         Pane pane = new Pane();
         ComboBox comboBox = new ComboBox();
         ObservableList<String> pref = FXCollections.observableArrayList(topics);
@@ -100,7 +108,7 @@ public class Client2 {
         comboBox.setOnMouseClicked(event -> {
             validateCategories(comboBox);
 
-            if(isUpdated()) {
+            if (isUpdated()) {
                 popupTopicsUpdated();
             }
             setUpdated(false);
@@ -219,17 +227,17 @@ public class Client2 {
 
             String key = it.next();
 
-                Label messageInfo = new Label(info.getText() + " " + key);
-                Label message = new Label(label.getText() + " " + messages.get(key));
+            Label messageInfo = new Label(info.getText() + " " + key);
+            Label message = new Label(label.getText() + " " + messages.get(key));
 
-                messageInfo.setLayoutY(info.getLayoutY() + 20);
-                message.setLayoutY(label.getLayoutY() + 20);
+            messageInfo.setLayoutY(info.getLayoutY() + 20);
+            message.setLayoutY(label.getLayoutY() + 20);
 
-                labels.add(messageInfo);
-                labels.add(message);
+            labels.add(messageInfo);
+            labels.add(message);
 
-                info.setLayoutY(messageInfo.getLayoutY() + 20);
-                label.setLayoutY(message.getLayoutY() + 20);
+            info.setLayoutY(messageInfo.getLayoutY() + 20);
+            label.setLayoutY(message.getLayoutY() + 20);
 
         }
         if (labels.isEmpty()) {
@@ -300,14 +308,14 @@ public class Client2 {
     /**
      * popu window inform whether the list of topics was updated
      */
-    private void popupTopicsUpdated(){
+    private void popupTopicsUpdated() {
 
         Stage stage = new Stage();
         Pane pane = new Pane();
         Label info = new Label();
         info.setText("Topics list has been updated by admin !");
         pane.getChildren().add(info);
-        stage.setScene(new Scene(pane,250,100));
+        stage.setScene(new Scene(pane, 250, 100));
         stage.show();
     }
 
